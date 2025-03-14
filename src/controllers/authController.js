@@ -18,8 +18,6 @@ exports.register = async (req, res) => {
             password,
             username,
             role: "Client",
-            created_at: new Date(),
-            updated_at: new Date()
         });
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
@@ -50,9 +48,7 @@ exports.registerAdmin = async (req, res) => {
             email,
             password,
             username,
-            role: "Admin",
-            created_at: new Date(),
-            updated_at: new Date()
+            role: "Admin"
         });
         res.status(201).json({
             message: 'Usuario administrador registrado exitosamente',
@@ -88,6 +84,11 @@ exports.login = async (req, res) => {
             JWT_SECRET,
             { expiresIn: '24h' }
         );
+
+        const updatedUser = await User.update(
+            { token: token },
+            { where: { id: user.id } }
+        )
 
         res.json({
             message: 'Login exitoso',
