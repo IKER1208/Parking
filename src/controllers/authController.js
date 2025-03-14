@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_super_seguro';
 
 exports.register = async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const { email, password, username } = req.body;
 
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -16,14 +16,51 @@ exports.register = async (req, res) => {
         const user = await User.create({
             email,
             password,
-            name
+            username,
+            role: "Client",
+            created_at: new Date(),
+            updated_at: new Date()
         });
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
             user: {
                 id: user.id,
                 email: user.email,
-                name: user.name
+                username: user.username,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error('Error en registro:', error);
+        res.status(500).json({ message: 'Error al registrar usuario' });
+    }
+};
+
+exports.registerAdmin = async (req, res) => {
+    try {
+        const { email, password, username } = req.body;
+
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ message: 'El email ya está registrado' });
+        }
+
+        // Crear nuevo usuario
+        const user = await User.create({
+            email,
+            password,
+            username,
+            role: "Admin",
+            created_at: new Date(),
+            updated_at: new Date()
+        });
+        res.status(201).json({
+            message: 'Usuario administrador registrado exitosamente',
+            user: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                role: user.role
             }
         });
     } catch (error) {
