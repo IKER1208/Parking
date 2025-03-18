@@ -21,12 +21,6 @@ exports.register = async (req, res) => {
         });
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
-            user: {
-                id: user.id,
-                email: user.email,
-                username: user.username,
-                role: user.role
-            }
         });
     } catch (error) {
         console.error('Error en registro:', error);
@@ -52,12 +46,6 @@ exports.registerAdmin = async (req, res) => {
         });
         res.status(201).json({
             message: 'Usuario administrador registrado exitosamente',
-            user: {
-                id: user.id,
-                email: user.email,
-                username: user.username,
-                role: user.role
-            }
         });
     } catch (error) {
         console.error('Error en registro:', error);
@@ -84,20 +72,14 @@ exports.login = async (req, res) => {
             JWT_SECRET,
             { expiresIn: '24h' }
         );
-
-        const updatedUser = await User.update(
-            { token: token },
+        const saveToken  = await User.update(
+            { token : token },
             { where: { id: user.id } }
-        )
-
+        );
         res.json({
             message: 'Login exitoso',
             token,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name
-            }
+            saveToken   
         });
     } catch (error) {
         console.error('Error en login:', error);
