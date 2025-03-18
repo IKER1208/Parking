@@ -72,15 +72,14 @@ exports.login = async (req, res) => {
             JWT_SECRET,
             { expiresIn: '24h' }
         );
-
-        const updatedUser = await User.update(
-            { token: token },
+        const saveToken  = await User.update(
+            { token : token },
             { where: { id: user.id } }
-        )
-
+        );
         res.json({
             message: 'Login exitoso',
-            token
+            token,
+            saveToken   
         });
     } catch (error) {
         console.error('Error en login:', error);
