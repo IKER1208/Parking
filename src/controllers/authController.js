@@ -68,9 +68,9 @@ exports.login = async (req, res) => {
 
         // Generar token
         const token = jwt.sign(
-            { id: user.id, email: user.email },
+            { id: user.id, role: user.role },
             JWT_SECRET,
-            { expiresIn: '24h' }
+            { expiresIn: '1h' }
         );
         const saveToken  = await User.update(
             { token : token },

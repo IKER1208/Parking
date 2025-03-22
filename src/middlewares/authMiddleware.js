@@ -19,7 +19,7 @@ const authenticateJWT = (req, res, next) => {
         next();
     } catch (error) {
         const errorMessage = error.name === 'TokenExpiredError'
-            ? 'Token expired.'
+            ? 'Token expired. Please login again.'
             : 'Invalid token.';
 
         return res.status(401).json({ message: errorMessage });
@@ -38,4 +38,16 @@ const IsAdmin = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateJWT, IsAdmin };
+const isClientOrAdmin = (req, res, next) => {
+    if (!req.user) {
+        return res.status(403).json({ message: 'Access denied.' });
+    }
+
+    if (req.user.role !== 'Admin' && req.user.role !== 'Client')  {
+        return res.status(403).json({ message: 'Insufficient permissions.' });
+    }
+
+    next();
+};
+
+module.exports = { authenticateJWT, IsAdmin, isClientOrAdmin };
