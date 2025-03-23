@@ -68,3 +68,17 @@ exports.getParkingLotById = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener lugar de estacionamiento' });
     }
 };
+
+exprts.getTop4FreeParkingLots = async (req, res) => {
+    try {
+        const parkingLots = await ParkingLot.findAll({
+            where: { status: true },
+            order: [['id', 'DESC']],
+            limit: 4
+        });
+        res.json(parkingLots);
+    } catch (error) {
+        console.error('Error al obtener lugares de estacionamiento:', error);
+        res.status(500).json({ message: 'Error al obtener lugares de estacionamiento' });
+    }
+};
