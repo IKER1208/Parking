@@ -13,6 +13,7 @@ const authenticateJWT = (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
+        console.log('Token recibido:', token);
         const decoded = jwt.verify(token, secret);
 
         req.user = decoded;
@@ -20,7 +21,7 @@ const authenticateJWT = (req, res, next) => {
     } catch (error) {
         const errorMessage = error.name === 'TokenExpiredError'
             ? 'Token expired. Please login again.'
-            : 'Invalid token.';
+            : 'Invalid token.56';
 
         return res.status(401).json({ message: errorMessage });
     }

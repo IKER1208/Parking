@@ -7,6 +7,7 @@ exports.getAllUsers = async (req, res) => {
     } catch (error) {
         console.error('Error en obtener usuarios:', error);
         res.status(500).json({ message: 'Error al obtener usuarios' });
+        return;
     }
 }
 
