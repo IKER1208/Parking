@@ -1,7 +1,14 @@
 const User = require('../database/models/User');
 const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_super_seguro';
+dotenv.config();
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+
+if (!JWT_SECRET_KEY) {
+    throw new Error('JWT_SECRET_KEY must be defined in environment variables');
+}
 
 exports.register = async (req, res) => {
     try {
@@ -69,7 +76,7 @@ exports.login = async (req, res) => {
         // Generar token
         const token = jwt.sign(
             { id: user.id, role: user.role },
-            JWT_SECRET,
+            JWT_SECRET_KEY,
             { expiresIn: '1h' }
         );
         const saveToken  = await User.update(
