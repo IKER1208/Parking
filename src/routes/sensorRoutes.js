@@ -7,6 +7,6 @@ const authMiddleware = require('../middlewares/authMiddleware');
 router.post('/publish/', sensorController.sendTopicMessage);
 // router.put('/update-status', authMiddleware.authenticateJWT, authMiddleware.isAdmin, sensorController.updateSensorStatus);
 router.get('/logs/:topic', sensorController.getTopicLogs);
-rxouter.get('/all', sensorController.getAllTopicsLogs);
+router.get('/all', sensorController.getAllTopicsLogs);
 
 module.exports = router;
