@@ -1,6 +1,7 @@
 const Sensor = require('../database/models/Sensor');
 const ParkingSensor = require('../database/models/ParkingSensor');
 const Log = require('../database/models/Log');
+const { MQTT_API_URL, MQTT_API_KEY, MQTT_SECRET_KEY } = process.env;
 
 exports.createSensor = async (req, res) => {
     try {
@@ -71,15 +72,22 @@ exports.updateSensorStatus = async (req, res) => {
 
 exports.getSensorLogs = async (req, res) => {
     try {
-        const { sensor_id } = req.params;
+        const { topic } = req.params;
         
-        const logs = await Log.findAll({
-            where: { sensor_id },
-            include: [{ model: Sensor }],
-            order: [['created_at', 'DESC']]
+        const response = await fetch(`${MQTT_API_URL}mqtt/retainer/message/${topic}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                
+            }
         });
+        const data = await response.json();
 
-        res.json(logs);
+        let buff = Buffer.from(data.payload, 'base64');
+        let text = buff.toString('utf-8');
+        console.log(text)
+        res.json(text);
+
     } catch (error) {
         console.error('Error al obtener logs del sensor:', error);
         res.status(500).json({ message: 'Error al obtener logs del sensor' });
@@ -101,3 +109,9 @@ exports.getAllSensors = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener sensores' });
     }
 };
+
+// const payload = 'cGVuZWR1cm8=';
+
+// let buff = Buffer.from(payload, 'base64');
+// let text = buff.toString('utf-8');
+// console.log(text)
