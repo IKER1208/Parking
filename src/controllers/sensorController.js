@@ -1,25 +1,9 @@
 const Sensor = require('../database/models/Sensor');
 const ParkingSensor = require('../database/models/ParkingSensor');
 const Log = require('../database/models/Log');
+const { Buffer } = require('buffer');
+const { MQTT_API_URL, MQTT_API_KEY, MQTT_SECRET_KEY } = process.env;
 
-exports.createSensor = async (req, res) => {
-    try {
-        const { sensor_name, sensor_model } = req.body;
-        
-        const sensor = await Sensor.create({
-            sensor_name,
-            sensor_model
-        });
-
-        res.status(201).json({
-            message: 'Sensor guardado exitosamente',
-            sensor
-        });
-    } catch (error) {
-        console.error('Error al guardar sensor:', error);
-        res.status(500).json({ message: 'Error al guardar sensor' });
-    }
-};
 
 exports.assignSensorToParkingLot = async (req, res) => {
     try {
@@ -41,63 +25,122 @@ exports.assignSensorToParkingLot = async (req, res) => {
     }
 };
 
-exports.updateSensorStatus = async (req, res) => {
+exports.sendTopicMessage = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { status } = req.body;
+        const { datos } = req.body;
         
-        const parkingSensor = await ParkingSensor.findByPk(id);
-        if (!parkingSensor) {
-            return res.status(404).json({ message: 'Asignación de sensor no encontrada' });
+        const response = await fetch(`${MQTT_API_URL}publish/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${Buffer.from(`${MQTT_API_KEY}:${MQTT_SECRET_KEY}`).toString('base64')}`,
+            },
+            body: JSON.stringify({
+                "payload_encoding": "plain",
+                "topic": `${datos.topic}`,
+                "qos": 0,
+                "payload": `${datos.message}`,
+                "properties": {
+                    "payload_format_indicator": 0,
+                    "message_expiry_interval": 0,
+                    "response_topic": "some_other_topic",
+                    "correlation_data": "string",
+                    "user_properties": {
+                        "foo": "bar"
+                    },
+                    "content_type": "text/plain"
+                },
+                "retain": true
+            })
+        });
+
+        if (!response.ok) {
+            return res.status(404).json({ message: 'No se encontraron logs del sensor'});
         }
-
-        await parkingSensor.update({ status });
         
-        // Crear log del cambio de estado
-        await Log.create({
-            sensor_id: parkingSensor.sensor_id,
-            log_body: `Sensor status updated to: ${status}`
+        const data = await response.json();
+
+        return res.json({
+            message: 'Message del sensor actualizado exitosamente'
         });
 
-        res.json({
-            message: 'Estado del sensor actualizado exitosamente',
-            parkingSensor
-        });
     } catch (error) {
         console.error('Error al actualizar estado del sensor:', error);
-        res.status(500).json({ message: 'Error al actualizar estado del sensor' });
+        return res.status(500).json({ message: 'Error al actualizar estado del sensor', error: error.message });
     }
 };
 
-exports.getSensorLogs = async (req, res) => {
+exports.getTopicLogs = async (req, res) => {
     try {
-        const { sensor_id } = req.params;
+        const { topic } = req.params;
         
-        const logs = await Log.findAll({
-            where: { sensor_id },
-            include: [{ model: Sensor }],
-            order: [['created_at', 'DESC']]
+        const response = await fetch(`${MQTT_API_URL}mqtt/retainer/message/${topic}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${Buffer.from(`${MQTT_API_KEY}:${MQTT_SECRET_KEY}`).toString('base64')}`,
+            }
         });
 
-        res.json(logs);
+        if (!response.ok) {
+            res.status(404).json({ message: 'No se encontraron logs del sensor' });
+            return;
+        }
+
+        const data = await response.json();
+        
+        let buff = Buffer.from(data.payload, 'base64');
+        let text = buff.toString('utf-8');
+        console.log(text)
+        res.json({
+            message: 'Logs del sensor',
+            text
+        });
+
     } catch (error) {
         console.error('Error al obtener logs del sensor:', error);
-        res.status(500).json({ message: 'Error al obtener logs del sensor' });
+        res.status(500).json({ message: 'Error al obtener logs del sensor', error });
     }
 };
 
-exports.getAllSensors = async (req, res) => {
+exports.getAllTopicsLogs = async (req, res) => {
     try {
-        const sensors = await Sensor.findAll({
-            include: [{
-                model: ParkingSensor,
-                attributes: ['status', 'parking_lot_id']
-            }]
+        const topics = [
+            'prueba',
+            'ultrasonico',
+            'pene'
+        ];
+
+        const fetchTopicLogs = async (topic) => {
+            const response = await fetch(`${MQTT_API_URL}mqtt/retainer/message/${topic}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${Buffer.from(`${MQTT_API_KEY}:${MQTT_SECRET_KEY}`).toString('base64')}`,
+                }
+            });
+
+            if (!response.ok) {
+                return { topic, error: 'No se encontraron logs del sensor' };
+            }
+
+            const data = await response.json();
+            let buff = Buffer.from(data.payload, 'base64');
+            let text = buff.toString('utf-8');
+
+            return { topic, text };
+        };
+
+        const results = await Promise.all(topics.map(fetchTopicLogs));
+
+        res.json({
+            message: 'Logs de los sensores',
+            results
         });
-        
-        res.json(sensors);
+
     } catch (error) {
-        console.error('Error al obtener sensores:', error);
-        res.status(500).json({ message: 'Error al obtener sensores' });
+        console.error('Error al obtener logs de los sensores:', error);
+        res.status(500).json({ message: 'Error al obtener logs de los sensores', error });
     }
 };
+
