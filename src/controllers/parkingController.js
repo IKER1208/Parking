@@ -76,7 +76,7 @@ exprts.getTop4FreeParkingLots = async (req, res) => {
             order: [['id', 'DESC']],
             limit: 4
         });
-        res.json(parkingLots);
+        res.status(200).json(parkingLots);
     } catch (error) {
         console.error('Error al obtener lugares de estacionamiento:', error);
         res.status(500).json({ message: 'Error al obtener lugares de estacionamiento' });
