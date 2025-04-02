@@ -69,7 +69,7 @@ exports.getParkingLotById = async (req, res) => {
     }
 };
 
-exprts.getTop4FreeParkingLots = async (req, res) => {
+exports.getTop4FreeParkingLots = async (req, res) => {
     try {
         const parkingLots = await ParkingLot.findAll({
             where: { status: true },
