@@ -106,9 +106,17 @@ exports.getTopicLogs = async (req, res) => {
 exports.getAllTopicsLogs = async (req, res) => {
     try {
         const topics = [
-            'prueba',
-            'ultrasonico',
-            'pene'
+            'lugar1',
+            'lugar2',
+            'lugar3',
+            'temperatura',
+            'humedad',
+            'mq2',
+            'sensor_agua',
+            'sensor_luz',
+            'presencia1',
+            'presencia2',
+            'presencia3'
         ];
 
         const fetchTopicLogs = async (topic) => {
