@@ -144,3 +144,43 @@ exports.getAllTopicsLogs = async (req, res) => {
     }
 };
 
+exports.getParkingLotsLogs = async (req, res) => {
+    try {
+        const topics = [
+            'lugar1',
+            'lugar2',
+            'lugar3'
+        ];
+
+        const fetchTopicLogs = async (topic) => {
+            const response = await fetch(`${MQTT_API_URL}mqtt/retainer/message/${topic}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${Buffer.from(`${MQTT_API_KEY}:${MQTT_SECRET_KEY}`).toString('base64')}`,
+                }
+            });
+
+            if (!response.ok) {
+                return { topic, error: 'No se encontraron logs del sensor' };
+            }
+
+            const data = await response.json();
+            let buff = Buffer.from(data.payload, 'base64');
+            let text = buff.toString('utf-8');
+
+            return { topic, text };
+        };
+
+        const results = await Promise.all(topics.map(fetchTopicLogs));
+
+        res.json({
+            message: 'Logs de los sensores',
+            results
+        });
+
+    } catch (error) {
+        console.error('Error al obtener logs de los sensores:', error);
+        res.status(500).json({ message: 'Error al obtener logs de los sensores', error });
+    }
+};
