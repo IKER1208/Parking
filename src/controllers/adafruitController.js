@@ -12,11 +12,12 @@ exports.getFeedData = async(req, res) => {
       });
       
       const data = await response.json();
+      const result = data.last_value;
       res.status(200).json({
         message: 'Información del feed',
-        data
+        result: result
       });
-      return data;
+      return result;
     } catch (error) {
         console.error('Error al obtener datos:', error);
         return res.status(500).json({ message: 'Error al obtener datos del feed', error: error.message });
@@ -31,11 +32,15 @@ exports.getAllFeeds = async(req, res) => {
         });
         
         const data = await response.json();
+        const result = data.map(feed => ({
+            name: feed.name,
+            last_value: feed.last_value
+        }));
         res.status(200).json({
             message: 'Información de todos los feeds',
-            data
+            result
         });
-        return data;
+        return result;
     } catch (error) {
         console.error('Error al obtener datos:', error);
         return res.status(500).json({ message: 'Error al obtener datos del feed', error: error.message });
