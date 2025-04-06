@@ -59,7 +59,7 @@ exports.sendTopicMessage = async (req, res) => {
             return res.status(404).json({ message: 'No se encontraron logs del sensor' });
         }
 
-        const data = await response.json();
+       // const data = await response.json();
 
         // Buscar el sensor por el nombre del topic
         const sensor = await Sensor.findOne({
@@ -109,7 +109,24 @@ exports.getTopicLogs = async (req, res) => {
 
         let buff = Buffer.from(data.payload, 'base64');
         let text = buff.toString('utf-8');
-        console.log(text)
+        
+        // Buscar el sensor por el nombre del topic
+        const sensor = await Sensor.findOne({
+            where: {
+                sensor_name: topic
+            }
+        });
+
+        if (sensor) {
+            // Guardar el log en la base de datos
+            await Log.create({
+                sensor_id: sensor.id,
+                log_body: text
+            });
+        } else {
+            console.warn(`No se encontró un sensor con el nombre ${topic}`);
+        }
+
         res.json({
             message: 'Logs del sensor',
             text
@@ -144,6 +161,23 @@ exports.getAllTopicsLogs = async (req, res) => {
             const data = await response.json();
             let buff = Buffer.from(data.payload, 'base64');
             let text = buff.toString('utf-8');
+
+            // Buscar el sensor por el nombre del topic
+            const sensor = await Sensor.findOne({
+                where: {
+                    sensor_name: topic
+                }
+            });
+
+            if (sensor) {
+                // Guardar el log en la base de datos
+                await Log.create({
+                    sensor_id: sensor.id,
+                    log_body: text
+                });
+            } else {
+                console.warn(`No se encontró un sensor con el nombre ${topic}`);
+            }
 
             return { topic, text };
         };
@@ -185,6 +219,23 @@ exports.getParkingLotsLogs = async (req, res) => {
             const data = await response.json();
             let buff = Buffer.from(data.payload, 'base64');
             let text = buff.toString('utf-8');
+
+            // Buscar el sensor por el nombre del topic
+            const sensor = await Sensor.findOne({
+                where: {
+                    sensor_name: topic
+                }
+            });
+
+            if (sensor) {
+                // Guardar el log en la base de datos
+                await Log.create({
+                    sensor_id: sensor.id,
+                    log_body: text
+                });
+            } else {
+                console.warn(`No se encontró un sensor con el nombre ${topic}`);
+            }
 
             return { topic, text };
         };
