@@ -6,6 +6,7 @@ const userRoutes = require('./routes/userRoutes');
 const sensorRoutes = require('./routes/sensorRoutes');
 const parkingRoutes = require('./routes/parkingRoutes');
 const adafruitRoutes = require('./routes/adafruitRoutes');
+const dataRoutes = require('./routes/dataRoutes');
 const app = express();
 
 
@@ -18,7 +19,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/sensors', sensorRoutes);
 app.use('/api/parking', parkingRoutes);
 app.use('/api/adafruit', adafruitRoutes);
-
+app.use('/api/data', dataRoutes);
 
 sequelize.sync()
     .then(() => console.log('Base de datos sincronizada'))
