@@ -9,5 +9,4 @@ router.post('/publish', sensorController.sendTopicMessage);
 router.get('/logs/:topic', sensorController.getTopicLogs);
 router.get('/all', sensorController.getAllTopicsLogs);
 router.get('/all-parking-lots', sensorController.getParkingLotsLogs);
-
 module.exports = router;
